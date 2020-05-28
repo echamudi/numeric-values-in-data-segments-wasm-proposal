@@ -113,13 +113,12 @@ Usage examples:
 )
 ```
 
-And the raytracer example from previous section can be rewritten as:
+And the early raytracer example can be rewritten as:
 
 ```wat
 (data (offset (i32.const 0))
   (f32 0 100.0 0 97.0)     ;; ground.{x,y,z,r}
   (f32 0.937 0.278 0.369)  ;; ground.{R,G,B}
-  )
 )
 ```
 
