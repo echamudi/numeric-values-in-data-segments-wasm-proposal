@@ -47,15 +47,15 @@ x86-64 GCC and x86-64 Clang have [assembler directives](https://ftp.gnu.org/old-
 
 Some of them are:
 
-```asm
+```s
 data:
-  .ascii "abcd"         # 61 62 63 64
-  .byte  1, 2, 3, 4     # 01 02 03 04
-  .2byte 5, 6           # 05 00 06 00
-  .4byte 0x89ABCDEF     # EF CD AB 89
-  .8byte -1             # FF FF FF FF FF FF FF FF
-  .float 62.5           # 00 00 7A 42
-  .double 62.5          # 00 00 00 00 00 40 4F 40
+  .ascii  "abcd"         #; 61 62 63 64
+  .byte   1, 2, 3, 4     #; 01 02 03 04
+  .2byte  5, 6           #; 05 00 06 00
+  .4byte  0x89ABCDEF     #; EF CD AB 89
+  .8byte  -1             #; FF FF FF FF FF FF FF FF
+  .float  62.5           #; 00 00 7A 42
+  .double 62.5           #; 00 00 00 00 00 40 4F 40
 ```
 
 In NASM, there are [pseudo-instructions](http://www.tortall.net/projects/yasm/manual/html/nasm-pseudop.html), for example:
