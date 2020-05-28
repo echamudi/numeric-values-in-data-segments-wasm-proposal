@@ -63,7 +63,7 @@ In NASM, there are [pseudo-instructions](http://www.tortall.net/projects/yasm/ma
 ```asm
 data:
   db          'abcd', 0x01, 2, 3, 4   ; 61 62 63 64 01 02 03 04
-  dw          5,6                     ; 05 00 06 00
+  dw          5, 6                    ; 05 00 06 00
   dd          62.5                    ; 00 00 7A 42
   dq          62.5                    ; 00 00 00 00 00 40 4F 40
   times 4 db  0xAB                    ; AB AB AB AB
