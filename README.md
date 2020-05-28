@@ -1,6 +1,7 @@
 # WebAssembly Proposal: Numeric Values in WAT Data Segments
 
-This proposal proposes the ability of writing integers and floating point values in the data segments of WebAssembly Text Format (WAT). This document is the summarization of [this issue](https://github.com/WebAssembly/design/issues/1348) in WebAssembly design discussion repo.
+This proposal proposes the ability of writing integers and floating point values in the data segments of WebAssembly Text Format (WAT).
+This document is the summarization of [this issue](https://github.com/WebAssembly/design/issues/1348) in WebAssembly design discussion repo.
 
 ## Current State
 
@@ -126,7 +127,9 @@ By using this updated grammar, it's easy for WAT programmers to input the data d
 
 ### Execution
 
-Similar to assembler directives and pseudo-instructions, these keywords (`i8`, `i16`, etc.) are only commands for the assembler to convert the numbers into the respective encoding. The conversion happens during the wat2wasm compilation. Which means there is no change needed in the binary format spec or the core spec.
+Similar to assembler directives and pseudo-instructions, these keywords (`i8`, `i16`, etc.) are only commands for the assembler to convert the numbers into the respective encoding.
+The conversion happens during the wat2wasm compilation. 
+Which means there is no change needed in the binary format spec or the core spec.
 
 So, the following two snippents:
 
