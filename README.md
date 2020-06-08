@@ -93,6 +93,13 @@ numvec ::= '(' 'i8'  i8* ')'
         | '(' 'f64' f64* ')'
 ```
 
+It should also be available in the inline data segment in a memory module:
+
+```ebnf
+mem ::= '(' 'memory' id '(' 'data' dataval* ')' ')'
+      |  ...
+```
+
 Usage examples:
 
 ```wat
@@ -112,6 +119,9 @@ Usage examples:
 (data (offset (i32.const 0x200))
   (f64 3.14159265358979323846264338327950288)
 )
+
+;; Inline in memory modules
+(memory (data (i8 1 2 3 4)))
 ```
 
 And the early raytracer example can be rewritten as:
@@ -134,49 +144,46 @@ Which means there is no change needed in the binary format spec or the core spec
 So, the following two snippents:
 
 ```wat
+...
 (memory 1)
 (data (offset (i32.const 0))
   "abc"
   (i16 -1)
   (f32 62.5)
 )
+...
 ```
 ```wat
+...
 (memory 1)
 (data (offset (i32.const 0))
   "abc"
   "\FF\FF"
   "\00\00\7a\42"
 )
+...
 ```
 
 will output exactly the same binary code:
 
-<!-- ...
+
+```
+...
 ; data segment header 0
 0000010: 00                                        ; segment flags
 0000011: 41                                        ; i32.const
 0000012: 12                                        ; i32 literal
 0000013: 0b                                        ; end
-0000014: 0a                                        ; data segment size -->
-```
+0000014: 0a                                        ; data segment size
 ; data segment data 0
 0000015: 6162 6364 ffff 0000 7a42                  ; data segment data
+000000e: 10                                        ; FIXUP section size
+...
 ```
-<!-- 000000e: 10                                        ; FIXUP section size
- -->
+
 #### Encoding
 
-The encoding should use two's complement for integers and IEEE754 for float, which is similar to the `t.store` memory instructions:
-
-| numvec | corresponding store instruction |
-| - | - |
-| `(i8 ... )` | `i32.store8` / `i64.store8` |
-| `(i16 ... )` | `i32.store16` / `i64.store16` |
-| `(i32 ... )` | `i32.store` / `i64.store32` |
-| `(i64 ... )` | `i64.store` |
-| `(f32 ... )` | `f32.store` |
-| `(f64 ... )` | `f64.store` |
+The encoding should use two's complement for integers and IEEE754 for float, which is similar to the `t.store` memory instructions.
 
 This encoding is used to make sure that when we load the value from memory using the `load` memory instructions, the value will be consistant whether the data was stored by using `(data ... )` initialization or `t.store` instructions.
 
