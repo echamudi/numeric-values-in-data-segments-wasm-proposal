@@ -3,6 +3,8 @@
 This proposal proposes the ability of writing integers and floating point values in the data segments of WebAssembly Text Format (WAT).
 This document is the summarization of [this issue](https://github.com/WebAssembly/design/issues/1348) in WebAssembly design discussion repo.
 
+**Try Live Demo :** https://wasmprop-numerical-data.netlify.app/wat2wasm/index.html
+
 ## Current State
 
 In the current grammar, it allows us to write the data segments only in the form of strings.
