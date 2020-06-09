@@ -141,7 +141,7 @@ By using this updated grammar, it's easy for WAT programmers to input the data d
 
 Similar to assembler directives and pseudo-instructions, these keywords (`i8`, `i16`, etc.) are only commands for the assembler to convert the numbers into the respective encoding.
 The conversion happens during the wat2wasm compilation. 
-Which means there is no change needed in the binary format spec or the core spec.
+Which means there is no change needed in the binary format spec or the structure spec.
 
 So, the following two snippents:
 
