@@ -7,7 +7,7 @@ This document is the summarization of [this issue](https://github.com/WebAssembl
 
 **Updates:**
 
-9/6/2020: This proposal has been presented in 9/5/2020 WebAssembly GC Meeting.
+9/6/2020: This proposal has been presented in 9/6/2020 WebAssembly GC Meeting.
 
 12/6/2020: Added [wasm2wat translation](#wasm2wat-translation) and [out of range values](#out-of-range-values) subsection.
 
