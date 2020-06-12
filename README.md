@@ -9,7 +9,7 @@ This document is the summarization of [this issue](https://github.com/WebAssembl
 
 9/6/2020: This proposal has been presented in [9/6/2020 WebAssembly CG Meeting](https://github.com/WebAssembly/meetings/blob/master/main/2020/CG-06-09.md).
 
-12/6/2020: Added [wasm2wat translation](#wasm2wat-translation), [out of range values](#out-of-range-values), and [data alignment](#data-alignment) subsection. These items were asked during the meeting.
+12/6/2020: Added [data alignment](#data-alignment), [out of range values](#out-of-range-values), and [wasm2wat translation](#wasm2wat-translation) subsection. These items were asked during the meeting.
 
 ## Current State
 
@@ -210,11 +210,6 @@ Unaligned placements are allowed. For example:
 ```
 compiles to: `0102 00`
 
-#### wasm2wat translation
-
-The data segments in the compiled binary do not contain any information about their original form in WAT state.
-Therefore, the translation from the binary format back to the text format will use the default string form.
-
 #### Out of range values
 
 Out of range values should throw error during wat2wasm compilation.
@@ -226,6 +221,11 @@ Out of range values should throw error during wat2wasm compilation.
   (i8 -129)       ;; Error
 )
 ```
+
+#### wasm2wat translation
+
+The data segments in the compiled binary do not contain any information about their original form in WAT state.
+Therefore, the translation from the binary format back to the text format will use the default string form.
 
 ### Backward Compatibility
 
