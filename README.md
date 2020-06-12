@@ -9,7 +9,7 @@ This document is the summarization of [this issue](https://github.com/WebAssembl
 
 9/6/2020: This proposal has been presented in [9/6/2020 WebAssembly GC Meeting](https://github.com/WebAssembly/meetings/blob/master/main/2020/CG-06-09.md).
 
-12/6/2020: Added [wasm2wat translation](#wasm2wat-translation) and [out of range values](#out-of-range-values) subsection.
+12/6/2020: Added [wasm2wat translation](#wasm2wat-translation), [out of range values](#out-of-range-values), and [data alignment](#data-alignment) subsection. These items were asked during the meeting.
 
 ## Current State
 
@@ -194,6 +194,21 @@ will output exactly the same binary code:
 The encoding should use two's complement for integers and IEEE754 for float, which is similar to the `t.store` memory instructions.
 
 This encoding is used to make sure that when we load the value from memory using the `load` memory instructions, the value will be consistant whether the data was stored by using `(data ... )` initialization or `t.store` instructions.
+
+#### Alignment
+
+Unaligned placements are allowed. For example:
+
+```wat
+...
+(memory 1)
+(data (offset (i32.const 0))
+  (i8 1)    ;; will go to address 0
+  (i16 2)   ;; will go to address 1
+)
+...
+```
+compiles to: `0102 00`
 
 #### wasm2wat translation
 
