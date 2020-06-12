@@ -3,7 +3,13 @@
 This proposal proposes the ability of writing integers and floating point values in the data segments of WebAssembly Text Format (WAT).
 This document is the summarization of [this issue](https://github.com/WebAssembly/design/issues/1348) in WebAssembly design discussion repo.
 
-**Try live demo :** https://wasmprop-numerical-data.netlify.app/wat2wasm/index.html
+**Try live demo :** https://wasmprop-numerical-data.netlify.app/wat2wasm
+
+**Updates:**
+
+9/6/2020: This proposal has been presented in 9/5/2020 WebAssembly GC Meeting.
+
+12/6/2020: Added [wasm2wat translation](#wasm2wat-translation) and [out of range values](#out-of-range-values) subsection.
 
 ## Current State
 
@@ -188,6 +194,23 @@ will output exactly the same binary code:
 The encoding should use two's complement for integers and IEEE754 for float, which is similar to the `t.store` memory instructions.
 
 This encoding is used to make sure that when we load the value from memory using the `load` memory instructions, the value will be consistant whether the data was stored by using `(data ... )` initialization or `t.store` instructions.
+
+#### wasm2wat translation
+
+The data segments in the compiled binary do not contain any information about their original form in WAT state.
+Therefore, the translation from the binary format back to the text format will use the default string form.
+
+#### Out of range values
+
+Out of range values should throw error during wat2wasm compilation.
+
+```wat
+(memory 1)
+(data (offset (i32.const 0))
+  (i8 256)        ;; Error
+  (i8 -129)       ;; Error
+)
+```
 
 ### Backward Compatibility
 
