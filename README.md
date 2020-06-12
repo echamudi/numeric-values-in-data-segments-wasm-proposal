@@ -195,7 +195,7 @@ The encoding should use two's complement for integers and IEEE754 for float, whi
 
 This encoding is used to make sure that when we load the value from memory using the `load` memory instructions, the value will be consistant whether the data was stored by using `(data ... )` initialization or `t.store` instructions.
 
-#### Alignment
+#### Data Alignment
 
 Unaligned placements are allowed. For example:
 
