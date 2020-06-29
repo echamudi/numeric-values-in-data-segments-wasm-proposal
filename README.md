@@ -149,9 +149,8 @@ By using this updated grammar, it's easy for WAT programmers to input the data d
 
 ### Execution
 
-Similar to assembler directives and pseudo-instructions, these keywords (`i8`, `i16`, etc.) are only commands for the assembler to convert the numbers into the respective encoding.
-The conversion happens during the wat2wasm compilation. 
-Which means there is no change needed in the binary format spec or the structure spec.
+The conversion of numvec to data in data segments happens during the wat2wasm compilation. 
+Which means there is no change needed in the binary format, execution spec, or the structure spec.
 
 So, the following two snippents:
 
@@ -214,7 +213,7 @@ Unaligned placements are allowed. For example:
 ```
 compiles to: `0102 00`
 
-#### Out of range values
+#### Out of Range Values
 
 Out of range values should throw error during wat2wasm compilation.
 
@@ -226,7 +225,7 @@ Out of range values should throw error during wat2wasm compilation.
 )
 ```
 
-#### wasm2wat translation
+#### wasm2wat Translation
 
 The data segments in the compiled binary do not contain any information about their original form in WAT state.
 Therefore, the translation from the binary format back to the text format will use the default string form.
