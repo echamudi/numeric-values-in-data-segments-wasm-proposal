@@ -15,142 +15,123 @@ This document is the summarization of [this issue](https://github.com/WebAssembl
 
 26/6/2020: Official [spec fork repo](https://github.com/WebAssembly/wat-numeric-values) is made.
 
-## Current State
+## Summary
 
-In the current grammar, it allows us to write the data segments only in the form of strings.
-
-```ebnf
-data ::= '(' 'data' x:memidx '(' 'offset' e:expr ')' b*:datastring ')'
-
-datastring ::= (b*:string)*
-```
-
+* Currently, the data values in data segments in WAT can only be written in strings. 
 For example:
 
-```wat
-(data (offset (i32.const 0)) "abc")
-```
-```wat
-(data (offset (i32.const 0)) "a" "b" "c")
-```
+    ```wat
+    (data (offset (i32.const 0)) "1234")               ;; 3132 3334
+    ```
+    ```wat
+    (data (offset (i32.const 0)) "\09\ab\cd\ef")       ;; 09ab cdef
+    ```
 
-This rule is good enough for writing textual data to data segment.
+* This proposal proposes another writing format that allows us to write integers and float values.
 
-The problem comes when we want to enter numerical values. We have to encode the numbers manually in advance and write it in string by using escape character (`\`).
+    ```wat
+    (data (offset (i32.const 0))
+        (f32 0.2 0.3 0.4)          ;; cdcc 4c3e 9a99 993e cdcc cc3e
+    )
+    ```
+    ```wat
+    (memory $1
+        (data 
+            (i8 1 2)               ;; 0102
+            (i16 3 4)              ;; 0300 0400
+        )
+    )
+    ```
 
-Here's an example of data initialization from a [raytracer](https://github.com/binji/raw-wasm/blob/499bbff77564047f7d73332e18cb5a121ceb8f2e/raytrace/ray.wat#L6-L12) code by Ben Smith.
+* **Live Prototype:** https://wasmprop-numerical-data.netlify.app/wat2wasm/
 
-```wat
-(data (i32.const 0)
-  "\00\00\00\00" ;; ground.x
-  "\00\00\c8\42" ;; ground.y
-  "\00\00\00\00" ;; ground.z
-  "\00\00\c2\42" ;; ground.r
-  "\3b\df\6f\3f" ;; ground.R
-  "\04\56\8e\3e" ;; ground.G
-  "\91\ed\bc\3e" ;; ground.B
-)
-```
+    ([prototype repo](https://github.com/echamudi/wabt-wat-numeric-values/tree/patch-wat-numeric-values))
 
-The data above are actually f32 numbers. This approach feels hacky, and it's not easy to see the values of those float values from a single glance.
+## Motivation
 
-## Survey
+* Writing arbritary numeric values (integers and floats) to data segments is not simple.
+We need to encode the data, add escape characters `\`, and write it as strings.
 
-x86-64 GCC and x86-64 Clang have [assembler directives](https://ftp.gnu.org/old-gnu/Manuals/gas-2.9.1/html_chapter/as_7.html) that can be used to save arbritary number to data segments.
+    For example, the following snippet is meant to write some float values to a data segment.
 
-Some of them are:
+    ```wat
+    (data (i32.const 0)
+        "\00\00\c8\42"
+        "\00\00\80\3f"
+        "\00\00\00\3f"
+    )
+    ```
 
-```s
-data:
-  .ascii  "abcd"         #; 61 62 63 64
-  .byte   1, 2, 3, 4     #; 01 02 03 04
-  .2byte  5, 6           #; 05 00 06 00
-  .4byte  0x89ABCDEF     #; EF CD AB 89
-  .8byte  -1             #; FF FF FF FF FF FF FF FF
-  .float  62.5           #; 00 00 7A 42
-  .double 62.5           #; 00 00 00 00 00 40 4F 40
-```
+* If we ever need to review the numbers above, we cannot easily see the values without decoding it.
 
-In NASM, there are [pseudo-instructions](http://www.tortall.net/projects/yasm/manual/html/nasm-pseudop.html), for example:
+    `"\00\00\c8\42"` => `0x42c80000` => `100.0`
 
-```asm
-data:
-  db          'abcd', 0x01, 2, 3, 4   ; 61 62 63 64 01 02 03 04
-  dw          5, 6                    ; 05 00 06 00
-  dd          62.5                    ; 00 00 7A 42
-  dq          62.5                    ; 00 00 00 00 00 40 4F 40
-  times 4 db  0xAB                    ; AB AB AB AB
-```
+## Overview
 
-These directives help programmers to write and see the data in the code directly in human readable format rather than the encoded format.
+This proposal suggests a slight modification in the text format specification to accommodate writing numeric values in data segments.
 
-## Proposed Changes
+### Text Format Spec Changes
 
-### Grammar
+The data value in data segments should accept both strings and list of numbers (numvec).
 
-After a discussion in [the issue thread](https://github.com/WebAssembly/design/issues/1348), we've come to a possible enhanced grammar for data segments in WAT, roughly:
+<pre>
+data<sub>I</sub> ::= ‘(’ ‘data’ x:<a href="https://webassembly.github.io/spec/core/text/modules.html#text-memidx">memidx</a><sub>I</sub> ‘(’ ‘offset’ e:<a href="https://webassembly.github.io/spec/core/text/instructions.html#text-expr">expr</a><sub>I</sub> ‘)’ b*:<a href="https://github.com/WebAssembly/wat-numeric-values/blob/master/proposals/wat-numeric-values/Overview.md#text-format-spec-changes">dataval</a> ‘)’
+                => { <a href="https://webassembly.github.io/spec/core/syntax/modules.html#syntax-data">data</a> x', <a href="https://webassembly.github.io/spec/core/syntax/modules.html#syntax-data">offset</a> e, <a href="https://webassembly.github.io/spec/core/syntax/modules.html#syntax-data">init</a> b* }
 
-```ebnf
-data ::= '(' 'data' memidx '(' 'offset' expr ')' dataval* ')'
+dataval ::= (b*:<a href="https://github.com/WebAssembly/wat-numeric-values/blob/master/proposals/wat-numeric-values/Overview.md#text-format-spec-changes">datavalelem</a>)*       => <a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((b*)*)
 
-dataval ::= string
-        | numvec
+datavalelem ::= b*:<a href="https://webassembly.github.io/spec/core/text/values.html#text-string">string</a>           => b*
+             |  b*:<a href="https://github.com/WebAssembly/wat-numeric-values/blob/master/proposals/wat-numeric-values/Overview.md#text-format-spec-changes">numvec</a>           => b*
+</pre>
 
-numvec ::= '(' 'i8'  i8* ')'
-        | '(' 'i16' i16* ')'
-        | '(' 'i32' i32* ')'
-        | '(' 'i64' i64* ')'
+Numvecs denote sequences of bytes. They are enclosed in parentheses, start with a keyword to identify the type of the numbers, and followed by a list of numbers.
 
-        | '(' 'f32' f32* ')'
-        | '(' 'f64' f64* ')'
-```
+The numbers inside numvecs represent their byte sequence using the respective encoding. They are encoded using two's complement encoding for integers and IEEE754 encoding for float values. Each numvec symbol represents the concatenation of the bytes of those numbers.
 
-It should also be available in the inline data segment in a memory module:
+<pre>
+numvec ::= ‘(’ ‘i8’  (n:<a href="https://webassembly.github.io/spec/core/text/values.html#text-int">i8</a>)*  ‘)’      => <a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>i8</sub>(n))*)    (if |<a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>i8</sub>(n))*) | < 2<sup>32</sup>)
+        |  ‘(’ ‘i16’ (n:<a href="https://webassembly.github.io/spec/core/text/values.html#text-int">i16</a>)* ‘)’      => <a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>i16</sub>(n))*)   (if |<a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>i16</sub>(n))*)| < 2<sup>32</sup>)
+        |  ‘(’ ‘i32’ (n:<a href="https://webassembly.github.io/spec/core/text/values.html#text-int">i32</a>)* ‘)’      => <a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>i32</sub>(n))*)   (if |<a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>i32</sub>(n))*)| < 2<sup>32</sup>)
+        |  ‘(’ ‘i64’ (n:<a href="https://webassembly.github.io/spec/core/text/values.html#text-int">i64</a>)* ‘)’      => <a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>i64</sub>(n))*)   (if |<a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>i64</sub>(n))*)| < 2<sup>32</sup>)
+        |  ‘(’ ‘f32’ (n:<a href="https://webassembly.github.io/spec/core/text/values.html#text-float">f32</a>)* ‘)’      => <a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>f32</sub>(n))*)   (if |<a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>f32</sub>(n))*)| < 2<sup>32</sup>)
+        |  ‘(’ ‘f64’ (n:<a href="https://webassembly.github.io/spec/core/text/values.html#text-float">f64</a>)* ‘)’      => <a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>f64</sub>(n))*)   (if |<a href="https://webassembly.github.io/spec/core/syntax/conventions.html#notation-concat">concat</a>((<a href="https://webassembly.github.io/spec/core/exec/numerics.html#aux-bytes">bytes</a><sub>f64</sub>(n))*)| < 2<sup>32</sup>)
+</pre>
 
-```ebnf
-mem ::= '(' 'memory' id '(' 'data' dataval* ')' ')'
-      |  ...
-```
+This new data value form should also be available in the inline data segment in the memory module.
 
-Usage examples:
+<pre>
+‘(’ ‘memory’ <a href="https://webassembly.github.io/spec/core/text/values.html#text-id">id</a><sup>?</sup> ‘(’ ‘data’ b<sup>n</sup>:<a href="https://github.com/WebAssembly/wat-numeric-values/blob/master/proposals/wat-numeric-values/Overview.md#text-format-spec-changes">dataval</a> ‘)’ ‘)’ ≡
+    ‘(’ ‘memory’ <a href="https://webassembly.github.io/spec/core/text/values.html#text-id">id</a>' m m ‘)’ ‘(’ ‘data’ <a href="https://webassembly.github.io/spec/core/text/values.html#text-id">id</a>' ‘(’ ‘i32.const’ ‘0’ <a href="https://github.com/WebAssembly/wat-numeric-values/blob/master/proposals/wat-numeric-values/Overview.md#text-format-spec-changes">dataval</a> ‘)’
+        (if <a href="https://webassembly.github.io/spec/core/text/values.html#text-id">id</a>'=<a href="https://webassembly.github.io/spec/core/text/values.html#text-id">id</a><sup>?</sup> ≠ 𝜖 ∨ <a href="https://webassembly.github.io/spec/core/text/values.html#text-id">id</a>' <a href="https://webassembly.github.io/spec/core/text/values.html#text-id-fresh">fresh</a>, m=ceil(n/64Ki))
+</pre>
+
+### Usage Example
 
 ```wat
 ;; XYZ coordinate points 
 (data (offset (i32.const 0))
-  (f32 0.2 0.3 0.4)
-  (f32 0.4 0.5 0.6)
-  (f32 0.4 0.5 0.6)
+    (f32 0.2 0.3 0.4)
+    (f32 0.4 0.5 0.6)
+    (f32 0.4 0.5 0.6)
 )
 
 ;; Writing 1001st ~ 1010th prime number
 (data (offset (i32.const 0x100))
-  (i16 7927 7933 7937 7949 7951 7963 7993 8009 8011 8017)
+    (i16 7927 7933 7937 7949 7951 7963 7993 8009 8011 8017)
 )
 
 ;; PI
 (data (offset (i32.const 0x200))
-  (f64 3.14159265358979323846264338327950288)
+    (f64 3.14159265358979323846264338327950288)
 )
 
-;; Inline in memory modules
+;; Inline in memory module
 (memory (data (i8 1 2 3 4)))
 ```
 
-And the early raytracer example can be rewritten as:
+### Execution Result Example
 
-```wat
-(data (offset (i32.const 0))
-  (f32 0 100.0 0 97.0)     ;; ground.{x,y,z,r}
-  (f32 0.937 0.278 0.369)  ;; ground.{R,G,B}
-)
-```
-
-By using this updated grammar, it's easy for WAT programmers to input the data directly in integers and floating point formats.
-
-### Execution
-
-The conversion of numvec to data in data segments happens during the wat2wasm compilation. 
-Which means there is no change needed in the binary format, execution spec, or the structure spec.
+The conversion of numvecs to data in data segments happens during the text format to binary format compilation. 
 
 So, the following two snippents:
 
@@ -191,11 +172,11 @@ will output the same binary code:
 ...
 ```
 
+### Additional Information
+
 #### Encoding
 
-The encoding should use two's complement for integers and IEEE754 for float, which is similar to the `t.store` memory instructions.
-
-This encoding is used to make sure that when we load the value from memory using the `load` memory instructions, the value will be consistant whether the data was stored by using `(data ... )` initialization or `t.store` instructions.
+As previously described, the encoding of numbers inside numvecs is two's complement for integers and IEEE754 for float, which is similar to the `t.store` memory instructions. This encoding is used to ensure that when we load the value from memory using the `load` memory instructions, the value will be consistent whether the data was stored by using `(data ... )` initialization or `t.store` instructions.
 
 #### Data Alignment
 
@@ -214,7 +195,7 @@ compiles to: `0102 00`
 
 #### Out of Range Values
 
-Out of range values should throw error during wat2wasm compilation.
+Out of range values should throw error during text format to binary format compilation.
 
 ```wat
 (memory 1)
@@ -224,12 +205,12 @@ Out of range values should throw error during wat2wasm compilation.
 )
 ```
 
-#### wasm2wat Translation
+#### Binary Format to Text Format Translation
 
 The data segments in the compiled binary do not contain any information about their original form in WAT state.
 Therefore, the translation from the binary format back to the text format will use the default string form.
 
-### Backward Compatibility
+#### Backward Compatibility
 
 As the proposed grammar still accepts the string form, all existing WAT codes should work fine.
 
