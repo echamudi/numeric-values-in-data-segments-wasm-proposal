@@ -7,13 +7,13 @@ This document is the summarization of [this issue](https://github.com/WebAssembl
 
 **Updates:**
 
-9/6/2020: This proposal has been presented in [9/6/2020 WebAssembly CG Meeting](https://github.com/WebAssembly/meetings/blob/a55ad5c884653db19d81f3684a8026c01052a24b/main/2020/CG-06-09.md#discuss-numerical-values-in-data-segments-proposal-discussion-link-and-semi-formal-description-repo).
+2020-06-09: This proposal has been presented in [2020-06-9 WebAssembly CG Meeting](https://github.com/WebAssembly/meetings/blob/a55ad5c884653db19d81f3684a8026c01052a24b/main/2020/CG-06-09.md#discuss-numerical-values-in-data-segments-proposal-discussion-link-and-semi-formal-description-repo).
 
-12/6/2020: Added [data alignment](#data-alignment), [out of range values](#out-of-range-values), and [wasm2wat translation](#wasm2wat-translation) subsection. These items were asked during the meeting.
+2020-06-12: Added [data alignment](#data-alignment), [out of range values](#out-of-range-values), and [wasm2wat translation](#wasm2wat-translation) subsection. These items were asked during the meeting.
 
-23/6/2020: Advanced to phase 1 in [23/6/2020 WebAssembly CG Meeting](https://github.com/WebAssembly/meetings/blob/8630cd6ad2c34fc7f26537f78e04c0a79e5e53a1/main/2020/CG-06-23.md#poll-on-general-interest-in-this-proposal-and-advancing-to-phase-1)
+2020-06-23: Advanced to phase 1 in [2020-06-23 WebAssembly CG Meeting](https://github.com/WebAssembly/meetings/blob/8630cd6ad2c34fc7f26537f78e04c0a79e5e53a1/main/2020/CG-06-23.md#poll-on-general-interest-in-this-proposal-and-advancing-to-phase-1)
 
-26/6/2020: Official [spec fork repo](https://github.com/WebAssembly/wat-numeric-values) is made.
+2020-06-26: Official [spec fork repo](https://github.com/WebAssembly/wat-numeric-values) is made.
 
 ## Summary
 
