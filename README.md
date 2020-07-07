@@ -13,7 +13,7 @@ This document is the summarization of [this issue](https://github.com/WebAssembl
 
 2020-06-23: Advanced to phase 1 in [2020-06-23 WebAssembly CG Meeting](https://github.com/WebAssembly/meetings/blob/8630cd6ad2c34fc7f26537f78e04c0a79e5e53a1/main/2020/CG-06-23.md#poll-on-general-interest-in-this-proposal-and-advancing-to-phase-1)
 
-2020-06-26: Official [spec fork repo](https://github.com/WebAssembly/wat-numeric-values) is made.
+2020-06-26: The official [spec fork repo](https://github.com/WebAssembly/wat-numeric-values) is made.
 
 ## Summary
 
